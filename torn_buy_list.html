@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy List TORN — Forêt</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f7f0e4;
+      --muted: #b7a588;
+      --accent: #d8a74d;
+      --accent-2: #8ec762;
+      --border: rgba(255,255,255,0.12);
+      --panel: rgba(12, 18, 12, 0.92);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, rgba(8, 16, 10, 0.98), rgba(4, 8, 5, 1));
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    .hero {
+      min-height: 70vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(142, 199, 98, 0.16), transparent 22%),
+        radial-gradient(circle at 80% 15%, rgba(255,255,255,0.05), transparent 20%),
+        linear-gradient(140deg, rgba(19, 31, 20, 0.96) 0%, rgba(9, 16, 10, 0.98) 100%);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(120deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 16px),
+        radial-gradient(circle at 50% 80%, rgba(63, 92, 44, 0.26), transparent 35%);
+      pointer-events: none;
+    }
+    .forest-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 60%, rgba(110, 151, 75, 0.25), transparent 18%),
+        radial-gradient(circle at 80% 58%, rgba(98, 136, 64, 0.2), transparent 16%),
+        radial-gradient(circle at 50% 78%, rgba(55, 70, 42, 0.28), transparent 24%);
+    }
+    .hero-panel {
+      position: relative;
+      width: min(1040px, 100%);
+      padding: 28px 30px;
+      border-radius: 28px;
+      background: rgba(7, 12, 8, 0.82);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      z-index: 2;
+    }
+    .hero-actions {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 10px;
+      z-index: 3;
+    }
+    .trade-btn, .lang-btn {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+    .trade-btn:hover, .lang-btn:hover { background: rgba(216, 167, 77, 0.18); }
+    .hero-panel h1 { font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 10px; }
+    .hero-panel p { color: var(--muted); line-height: 1.7; max-width: 760px; }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .stat {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat strong { display: block; font-size: 1.05rem; color: #f8d594; margin-bottom: 4px; }
+    .content { padding: 24px; background: linear-gradient(180deg, rgba(6, 10, 6, 0.96), rgba(3, 5, 3, 0.98)); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin: 4px 0 16px; }
+    .search, .pill { min-height: 48px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(12, 16, 12, 0.94); color: var(--ink); padding: 0 14px; font-size: 0.95rem; }
+    .search { flex: 1 1 260px; }
+    .pill { cursor: pointer; padding: 0 16px; font-weight: 600; }
+    .pill.active { background: linear-gradient(135deg, rgba(216, 167, 77, 0.22), rgba(122, 78, 24, 0.2)); border-color: rgba(216, 167, 77, 0.35); }
+    .section { margin-bottom: 24px; }
+    .section-title { margin-bottom: 10px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+    .card {
+      border-radius: 18px; padding: 12px; background: var(--panel); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; flex-direction: column; justify-content: flex-start; gap: 10px; min-height: 320px; height: 100%;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.18); min-width: 0; overflow: hidden;
+    }
+    .img-wrap {
+      width: min(100%, 120px); aspect-ratio: 1 / 1; margin: 0 auto; border-radius: 15px; overflow: hidden;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); display: grid; place-items: center; padding: 8px;
+      flex-shrink: 0;
+    }
+    .img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: auto; }
+    .item-name {
+      font-size: 0.95rem; line-height: 1.2; min-height: 2.4rem; display: flex; align-items: center; justify-content: center;
+      text-align: center; word-break: break-word; overflow-wrap: anywhere; padding: 0 2px;
+    }
+    .meta {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: 0.8rem;
+      min-height: 18px; width: 100%;
+    }
+    .meta span:first-child { flex-shrink: 0; }
+    .meta span:last-child {
+      flex: 1 1 auto; min-width: 0; text-align: right; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .price {
+      color: #f8d594; font-weight: 800; font-size: 0.8rem; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .price.big { font-size: 0.72rem; }
+    .price.unavailable { color: #c5c2b8; font-style: italic; font-weight: 700; }
+    .empty { padding: 18px; border-radius: 16px; background: rgba(12, 16, 12, 0.94); color: var(--muted); }
+    .lang-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 2, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .lang-modal.open { display: flex; }
+    .lang-card {
+      width: min(420px, 100%);
+      background: rgba(10, 16, 10, 0.96);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .lang-card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .lang-card p { color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+    .lang-options { display: grid; gap: 10px; }
+    .lang-option {
+      width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: var(--ink);
+      border-radius: 14px; padding: 12px 14px; text-align: left; cursor: pointer;
+    }
+    .lang-option:hover { background: rgba(216, 167, 77, 0.16); }
+    @media (max-width: 1100px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+    @media (max-width: 860px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 620px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 420px) { .grid { grid-template-columns: 1fr; } .hero-stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="forest-glow"></div>
+    <div class="hero-panel">
+      <div class="hero-actions">
+        <button class="trade-btn" id="tradeBtn" type="button">Échanger</button>
+        <button class="lang-btn" id="langBtn" type="button">Langue</button>
+      </div>
+      <h1 id="heroTitle">Liste d’achat TORN dans la forêt</h1>
+      <p id="heroDesc">La vue est maintenant autonome : elle charge un jeu de données de secours si l’API ne répond pas et remplace les visuels externes par des icônes locales pour éviter les erreurs d’affichage.</p>
+      <div class="hero-stats" id="stats"></div>
+    </div>
+  </section>
+
+  <div class="lang-modal" id="langModal">
+    <div class="lang-card">
+      <h2 id="langModalTitle">Choisir la langue</h2>
+      <p id="langModalSubtitle">Sélectionnez votre langue préférée.</p>
+      <div class="lang-options">
+        <button class="lang-option" data-lang="fr" type="button">Français</button>
+        <button class="lang-option" data-lang="en" type="button">English</button>
+        <button class="lang-option" data-lang="es" type="button">Español</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="content">
+    <div class="toolbar">
+      <input id="search" class="search" type="search" placeholder="Chercher un item..." />
+      <button class="pill active" data-filter="all" type="button">Tous</button>
+      <button class="pill" data-filter="highbuy" type="button">On ne rachète pas</button>
+    </div>
+    <div id="groups"></div>
+  </section>
+
+  <script>
+    const API_URL = '/api/items-data';
+    const categoryRules = [
+      { label: 'Armes', match: ['gun','rifle','pistol','knife','sword','bat','axe','cannon','launcher','rocket','machete','crossbow','bow','dagger','chainsaw','grenade','minigun','shotgun','blowgun','blade','club','rpg','gun'] },
+      { label: 'Armures', match: ['armor','armure','helmet','vest','shield','suit','gloves','boots','plate','body','riot','bulletproof','kevlar','combat','hazmat','eod','mask'] },
+      { label: 'Vêtements', match: ['clothing','outfit','hat','cape','dress','wings','shirt','trousers','pants','gloves','boots','jacket','suit','hood','hoodie','bow tie','vest','robe','costume','scrooge','halo','bunny','opera','wedding','uniform','yoga'] },
+      { label: 'Drogues', match: ['drug','medicine','medical','pill','bandage','antidote','healing','pain','kit','booster','morphine','ecstasy','xanax','ketamine','opium','lsd','speed','pcp','cannabis'] },
+      { label: 'Nourriture', match: ['food','drink','beer','wine','cake','fruit','bread','cheese','coffee','tea','dinner','juice','soda','pizza','candy','chocolate','rum','whale meat'] },
+      { label: 'Collectibles', match: ['collectible','keepsake','figurine','book','trophy','medal','pawn','artifact','mask','avatar','doll','painting','statue','portrait','toy','souvenir','ticket','card','coin','helmet of justice','halo vest'] },
+      { label: 'Véhicules', match: ['car','bike','boat','jet','yacht','truck','van','motor','kart','plane','helicopter','motorcycle','quad','supercar','limo','bus','tank','drift','macro','gt-r','volt','honda','toyota'] },
+      { label: 'Outils', match: ['tool','equipment','kit','trap','device','gear','supply','battery','wrench','pliers','crowbar','hammer','torch','lantern','paint','spray','camera','pipe','battery','pick','drill'] },
+      { label: 'Divers', match: [] }
+    ];
+    const expensiveItemPatterns = [
+      /odc\b/i,
+      /odc outfit/i,
+      /halo vest/i,
+      /helmet of justice/i,
+      /gold plated/i,
+      /scrooge/i,
+      /vanguard/i,
+      /sentinel/i,
+      /marauder/i,
+      /dozen white roses/i,
+      /yacht/i,
+      /supercar/i,
+      /gift card/i,
+      /keg of beer/i,
+      /love juice/i,
+      /gold plated ak-47/i
+    ];
+    const manualMarketOverrides = [
+      { test: /gold plated ak-47/i, market_value: 25000000000, buy_price: 25000000000 },
+      { test: /dozen white roses/i, market_value: 950000000, buy_price: 950000000 },
+      { test: /halo vest/i, market_value: 1200000000, buy_price: 1200000000 },
+      { test: /helmet of justice/i, market_value: 1000000000, buy_price: 1000000000 },
+      { test: /hazmat suit/i, market_value: 800000000, buy_price: 800000000 },
+      { test: /scrooge/i, market_value: 600000000, buy_price: 600000000 },
+      { test: /vanguard/i, market_value: 800000000, buy_price: 800000000 },
+      { test: /sentinel/i, market_value: 800000000, buy_price: 800000000 }
+    ];
+    const FALLBACK_ITEMS = [
+      { name: 'Rose de la forêt', type: 'Fleur', buy_price: 145000, market_value: 620000, image: '' },
+      { name: 'Lys blanc', type: 'Fleur', buy_price: 180000, market_value: 740000, image: '' },
+      { name: 'Antidote de survie', type: 'Médicament', buy_price: 240000, market_value: 900000, image: '' },
+      { name: 'Bandage renforcé', type: 'Soins', buy_price: 110000, market_value: 410000, image: '' },
+      { name: 'Booster de récupération', type: 'Drogue', buy_price: 320000, market_value: 1200000, image: '' },
+      { name: 'Machette de brousse', type: 'Arme blanche', buy_price: 560000, market_value: 1500000, image: '' },
+      { name: 'Fusil de chasse', type: 'Arme', buy_price: 980000, market_value: 2600000, image: '' },
+      { name: 'Arc forestier', type: 'Arme', buy_price: 720000, market_value: 1900000, image: '' },
+      { name: 'Casque en cuir', type: 'Armure', buy_price: 430000, market_value: 1100000, image: '' },
+      { name: 'Gilet de survie', type: 'Armure', buy_price: 700000, market_value: 1850000, image: '' },
+      { name: 'Ration de survie', type: 'Nourriture', buy_price: 130000, market_value: 460000, image: '' },
+      { name: 'Brioche chaude', type: 'Nourriture', buy_price: 90000, market_value: 320000, image: '' },
+      { name: 'Eau de source', type: 'Boisson', buy_price: 60000, market_value: 220000, image: '' },
+      { name: 'Lampe torche', type: 'Équipement', buy_price: 180000, market_value: 620000, image: '' },
+      { name: 'Corde robuste', type: 'Divers', buy_price: 120000, market_value: 450000, image: '' },
+      { name: 'Piège de chasse', type: 'Divers', buy_price: 260000, market_value: 800000, image: '' },
+      { name: 'Carte de navigation', type: 'Divers', buy_price: 420000, market_value: 1300000, image: '' },
+      { name: 'Pelle de camp', type: 'Outil', buy_price: 360000, market_value: 980000, image: '' },
+      { name: 'Élixir de vitesse', type: 'Drogue', buy_price: 780000, market_value: 2400000, image: '' },
+      { name: 'Talisman de la clairière', type: 'Divers', buy_price: 2100000, market_value: 7600000, image: '' }
+    ];
+    const state = { items: [], query: '', filter: 'all', language: 'fr' };
+    const groups = document.getElementById('groups');
+    const searchInput = document.getElementById('search');
+    const stats = document.getElementById('stats');
+    const translations = {
+      fr: {
+        title: 'Liste d’achat TORN dans la forêt',
+        desc: 'La vue est maintenant autonome : elle charge un jeu de données de secours si l’API ne répond pas et remplace les visuels externes par des icônes locales pour éviter les erreurs d’affichage.',
+        searchPlaceholder: 'Chercher un item...',
+        all: 'Tous',
+        highValue: 'On ne rachète pas',
+        trade: 'Échanger',
+        language: 'Langue',
+        modalTitle: 'Choisir la langue',
+        modalSubtitle: 'Sélectionnez votre langue préférée.',
+        empty: 'Aucun item ne correspond à cette recherche.',
+        loaded: 'objets chargés',
+        visible: 'visibles',
+        high: 'hors rachat',
+        families: 'familles'
+      },
+      en: {
+        title: 'TORN buy list in the forest',
+        desc: 'The view is now self-sufficient: it loads a fallback dataset if the API does not respond and replaces external visuals with local icons to avoid display errors.',
+        searchPlaceholder: 'Search an item...',
+        all: 'All',
+        highValue: 'We do not buy back',
+        trade: 'Trade',
+        language: 'Language',
+        modalTitle: 'Choose language',
+        modalSubtitle: 'Select your preferred language.',
+        empty: 'No item matches this search.',
+        loaded: 'items loaded',
+        visible: 'visible',
+        high: 'not buyback',
+        families: 'families'
+      },
+      es: {
+        title: 'Lista de compra TORN en el bosque',
+        desc: 'La vista ya es autónoma: carga un conjunto de datos de respaldo si la API no responde y reemplaza las imágenes externas por iconos locales para evitar errores de visualización.',
+        searchPlaceholder: 'Buscar un objeto...',
+        all: 'Todos',
+        highValue: 'No lo recompramos',
+        trade: 'Intercambiar',
+        language: 'Idioma',
+        modalTitle: 'Elegir idioma',
+        modalSubtitle: 'Seleccione su idioma preferido.',
+        empty: 'Ningún objeto coincide con esta búsqueda.',
+        loaded: 'objetos cargados',
+        visible: 'visibles',
+        high: 'no recomprados',
+        families: 'familias'
+      }
+    };
+
+    function formatMoney(value) { return `$${Number(value || 0).toLocaleString('en-US')}`; }
+    function applyLanguage(lang) {
+      const nextLang = translations[lang] ? lang : 'fr';
+      state.language = nextLang;
+      const t = translations[nextLang];
+      document.getElementById('heroTitle').textContent = t.title;
+      document.getElementById('heroDesc').textContent = t.desc;
+      document.getElementById('tradeBtn').textContent = t.trade;
+      document.getElementById('langBtn').textContent = t.language;
+      document.getElementById('langModalTitle').textContent = t.modalTitle;
+      document.getElementById('langModalSubtitle').textContent = t.modalSubtitle;
+      searchInput.placeholder = t.searchPlaceholder;
+      document.querySelectorAll('.pill').forEach((button) => {
+        const key = button.dataset.filter === 'highbuy' ? 'highValue' : 'all';
+        button.textContent = t[key];
+      });
+      renderItems();
+    }
+    function isPlushOrFlower(item) { const text = `${item.name || ''} ${item.type || ''}`.toLowerCase(); return /plush|flower|rose|lily|daisy|bouquet|tulip/i.test(text); }
+    function applyManualOverrides(item) {
+      const text = `${item.name || ''} ${item.type || ''}`.trim();
+      if (!text) return item;
+
+      const overridden = manualMarketOverrides.reduce((current, override) => {
+        if (override.test.test(text)) {
+          return {
+            ...current,
+            market_value: Math.max(Number(current.market_value || 0), override.market_value),
+            buy_price: Math.max(Number(current.buy_price || 0), override.buy_price)
+          };
+        }
+        return current;
+      }, item);
+
+      if (isKnownExpensiveItem(overridden) && Number(overridden.market_value || 0) === 0 && Number(overridden.buy_price || 0) === 0) {
+        return {
+          ...overridden,
+          market_value: 1000000000,
+          buy_price: 1000000000
+        };
+      }
+      return overridden;
+    }
+    function getShopPrice(item) { return Number(item.market_value || item.buy_price || 0); }
+    function isKnownExpensiveItem(item) {
+      const name = `${item.name || ''}`.toLowerCase();
+      return expensiveItemPatterns.some((rx) => rx.test(name));
+    }
+    function getOurBuyPrice(item) {
+      if (isPlushOrFlower(item)) return Math.max(1, Math.round(getShopPrice(item)));
+      const base = Number(item.market_value || item.buy_price || 0);
+      if (base > 0) return Math.max(1, Math.floor(base * 0.95));
+      if (isKnownExpensiveItem(item)) return 1000000000;
+      return 0;
+    }
+    function isHighValueItem(item) {
+      const market = Number(item.market_value || item.buy_price || 0);
+      return market >= 10000000 || getOurBuyPrice(item) >= 10000000 || isKnownExpensiveItem(item);
+    }
+    function createPlaceholderSvg(label) {
+      const text = (label || 'ITEM').toUpperCase().slice(0, 2);
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+          <rect width="160" height="160" rx="28" fill="#132011"/>
+          <circle cx="80" cy="80" r="44" fill="#2b4218"/>
+          <path d="M80 28c16 20 24 34 24 52 0 13-8 26-24 36-16-10-24-23-24-36 0-18 8-32 24-52z" fill="#d8a74d"/>
+          <text x="80" y="92" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" fill="#f7f0e4">${text}</text>
+        </svg>`;
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }
+    function getImageSrc(item) {
+      if (item.image && /^https?:\/\//i.test(item.image)) return item.image;
+      return createPlaceholderSvg(item.name || item.type || 'ITEM');
+    }
+    function classify(item) {
+      const text = `${item.name || ''} ${item.type || ''}`.toLowerCase();
+      for (const category of categoryRules) {
+        if (category.match.some((term) => text.includes(term))) return category.label;
+      }
+      return 'Divers';
+    }
+    function renderStats(visibleItems) {
+      const t = translations[state.language || 'fr'];
+      const highBuyCount = state.items.filter(isHighValueItem).length;
+      const categoriesCount = new Set(state.items.map((item) => classify(item))).size;
+      stats.innerHTML = `
+        <div class="stat"><strong>${state.items.length}</strong><span>${t.loaded}</span></div>
+        <div class="stat"><strong>${visibleItems}</strong><span>${t.visible}</span></div>
+        <div class="stat"><strong>${highBuyCount}</strong><span>${t.high}</span></div>
+      `;
+      if (categoriesCount) {
+        const name = stats.querySelector('.stat:nth-child(2)');
+        if (name) name.insertAdjacentHTML('beforeend', `<div style="margin-top:4px;color:#b7a588;font-size:0.85rem;">${categoriesCount} familles</div>`);
+      }
+    }
+    function renderItems() {
+      const query = state.query.toLowerCase();
+      const filtered = state.items.filter((item) => {
+        const matchesSearch = (item.name || '').toLowerCase().includes(query);
+        const highBuy = isHighValueItem(item);
+        const matchesFilter = state.filter === 'all' ? true : highBuy;
+        return matchesSearch && matchesFilter;
+      });
+
+      renderStats(filtered.length);
+
+      const grouped = {};
+      filtered.forEach((item) => {
+        const cat = classify(item);
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(item);
+      });
+
+      const keys = Object.keys(grouped).sort();
+      if (!keys.length) {
+        groups.innerHTML = `<div class="empty">${translations[state.language || 'fr'].empty}</div>`;
+        return;
+      }
+
+      groups.innerHTML = keys.map((key) => {
+        const items = grouped[key].sort((a, b) => a.name.localeCompare(b.name));
+        return `
+          <div class="section">
+            <div class="section-title">${key}</div>
+            <div class="grid">
+              ${items.map((item) => {
+                const shopPrice = getShopPrice(item);
+                const ourPrice = getOurBuyPrice(item);
+                const isUnavailable = isHighValueItem(item);
+                return `
+                  <article class="card">
+                    <div class="img-wrap">
+                      <img src="${getImageSrc(item)}" alt="${item.name || 'Item'}">
+                    </div>
+                    <div class="item-name">${item.name || 'Item'}</div>
+                    <div class="meta"><span>Type</span><span>${item.type || 'Item'}</span></div>
+                    <div class="meta"><span>Prix shop</span><span class="price${shopPrice >= 1000000000 ? ' big' : ''}">${formatMoney(shopPrice)}</span></div>
+                    <div class="meta"><span>On rachète</span><span class="price${isUnavailable ? ' unavailable' : ''}">${isUnavailable ? 'Indisponible au rachat' : formatMoney(ourPrice)}</span></div>
+                    <div class="meta"><span>Marché</span><span class="price${item.market_value >= 1000000000 ? ' big' : ''}">${formatMoney(item.market_value || 0)}</span></div>
+                  </article>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function normalizeItems(rawItems) {
+      return rawItems
+        .map((item) => applyManualOverrides({
+          id: Number(item.id || 0),
+          name: item.name,
+          type: item.type || 'Item',
+          buy_price: Number(item.buy_price || 0),
+          market_value: Number(item.market_value || 0),
+          image: item.image || ''
+        }))
+        .filter((item) => item.name && Number(item.market_value || 0) > 0)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    async function loadItems() {
+      try {
+        const response = await fetch(API_URL, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        if (!response.ok) throw new Error('network');
+        const data = await response.json();
+        let raw = [];
+        if (Array.isArray(data)) raw = data;
+        else if (Array.isArray(data.items)) raw = data.items;
+        else if (typeof data.items === 'object') raw = Object.values(data.items);
+        else if (typeof data === 'object') raw = Object.values(data);
+        if (raw.length) {
+          state.items = normalizeItems(raw);
+          renderItems();
+          return;
+        }
+      } catch (error) {
+        // fallback below
+      }
+
+      state.items = normalizeItems(FALLBACK_ITEMS);
+      renderItems();
+    }
+
+    searchInput.addEventListener('input', (event) => { state.query = event.target.value; renderItems(); });
+    document.querySelectorAll('.pill').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.pill').forEach((pill) => pill.classList.remove('active'));
+        button.classList.add('active');
+        state.filter = button.dataset.filter;
+        renderItems();
+      });
+    });
+
+    document.getElementById('tradeBtn').addEventListener('click', () => {
+      window.open('https://www.torn.com/trade.php#step=start&userID=3345091', '_blank', 'noopener,noreferrer');
+    });
+
+    document.getElementById('langBtn').addEventListener('click', () => {
+      document.getElementById('langModal').classList.add('open');
+    });
+
+    document.querySelectorAll('.lang-option').forEach((button) => {
+      button.addEventListener('click', () => {
+        applyLanguage(button.dataset.lang);
+        document.getElementById('langModal').classList.remove('open');
+        localStorage.setItem('torn-buy-list-lang', button.dataset.lang);
+      });
+    });
+
+    document.getElementById('langModal').addEventListener('click', (event) => {
+      if (event.target.id === 'langModal') {
+        document.getElementById('langModal').classList.remove('open');
+      }
+    });
+
+    const savedLang = localStorage.getItem('torn-buy-list-lang') || 'fr';
+    applyLanguage(savedLang);
+    if (!localStorage.getItem('torn-buy-list-lang')) {
+      document.getElementById('langModal').classList.add('open');
+    }
+
+    loadItems();
+  </script>
+</body>
+</html>
