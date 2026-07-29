@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import threading
 import time
@@ -7,9 +8,10 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-import os
 
-ROOT = Path('/home/shadow_root')
+# Définition dynamique du dossier racine du projet
+ROOT = Path(__file__).parent.resolve()
+
 TORN_API_URL = 'https://api.torn.com/torn/?selections=items&key=b9nBVUJ2Dv0XJihv'
 TORNSTATS_URL = 'https://www.tornstats.com/items'
 CACHE = None
@@ -93,6 +95,8 @@ def load_items():
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
+        
+        # Route pour l'API JSON
         if parsed.path == '/api/items-data':
             try:
                 data = load_items()
@@ -112,14 +116,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(payload)
             return
 
-        ROOT = Path(__file__).parent.resolve()
-
+        # Route pour les fichiers statiques (HTML, JS, CSS, etc.)
         if parsed.path == '/' or parsed.path == '':
             target = ROOT / 'torn_buy_list.html'
         else:
             target = ROOT / parsed.path.lstrip('/')
 
-            if target.exists() and target.is_file():
+        if target.exists() and target.is_file():
             self.send_response(200)
             if target.suffix == '.html':
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -129,15 +132,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'text/css; charset=utf-8')
             else:
                 self.send_header('Content-Type', 'application/octet-stream')
-            
+
             self.send_header('Content-Length', str(target.stat().st_size))
             self.end_headers()
-            
-            # IMPORTANT: Il faut envoyer le contenu du fichier !
+
             with open(target, 'rb') as f:
                 self.wfile.write(f.read())
         else:
-            # Si le fichier n'est pas trouvé
             self.send_error(404, "File Not Found")
 
     def log_message(self, format, *args):
