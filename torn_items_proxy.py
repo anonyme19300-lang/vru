@@ -140,7 +140,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     port = 8000
     server = ThreadingHTTPServer(('0.0.0.0', port), Handler)
-    print(f'Serving on http://127.0.0.1:{port}')
+    print(f'Serving on http://0.0.0.0:{port}')
     server.serve_forever()
 
 
