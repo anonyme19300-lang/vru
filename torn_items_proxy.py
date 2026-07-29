@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
+import os
 
 ROOT = Path('/home/shadow_root')
 TORN_API_URL = 'https://api.torn.com/torn/?selections=items&key=b9nBVUJ2Dv0XJihv'
