@@ -112,11 +112,14 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(payload)
             return
 
-        if parsed.path == '/':
+        ROOT = Path(__file__).parent.resolve()
+
+        if parsed.path == '/' or parsed.path == '':
             target = ROOT / 'torn_buy_list.html'
         else:
             target = ROOT / parsed.path.lstrip('/')
-        if target.exists() and target.is_file():
+
+            if target.exists() and target.is_file():
             self.send_response(200)
             if target.suffix == '.html':
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -126,13 +129,16 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'text/css; charset=utf-8')
             else:
                 self.send_header('Content-Type', 'application/octet-stream')
+            
             self.send_header('Content-Length', str(target.stat().st_size))
             self.end_headers()
-            self.wfile.write(target.read_bytes())
+            
+            # IMPORTANT: Il faut envoyer le contenu du fichier !
+            with open(target, 'rb') as f:
+                self.wfile.write(f.read())
         else:
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(b'Not found')
+            # Si le fichier n'est pas trouvé
+            self.send_error(404, "File Not Found")
 
     def log_message(self, format, *args):
         return
